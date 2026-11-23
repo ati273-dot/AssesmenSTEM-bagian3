@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Penilaian Diri Proyek STEM COOLBOTTLE - Matematika Kelas X</title>
+  <!-- Memuat Tailwind CSS untuk tata letak responsif dan modern -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Memuat Font Inter dari Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* Pengaturan cetak (Print / PDF) agar laporan hasil asesmen tampak rapi saat dicetak */
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+      }
+      .print-shadow-none {
+        box-shadow: none !important;
+        border: 1px solid #cbd5e1 !important;
+      }
+    }
+
+    /* Animasi transisi halus untuk kemunculan kartu hasil */
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-slide {
+      animation: fadeSlideUp 0.4s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-sky-100 selection:text-sky-900">
+
+  <!-- Bilah Navigasi & Progres Atas (Sticky) -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm no-print">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5">
+          <!-- Ikon SVG Termos/Botol Pendingin & Kurva Eksponensial -->
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-600 flex items-center justify-center text-white shadow-sm shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 2h4" />
+              <path d="M12 2v3" />
+              <rect x="7" y="5" width="10" height="17" rx="3" />
+              <path d="M7 14c2.5-1 4.5-3.5 10-4" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-sky-600">Proyek STEM • Kelas X</p>
+            <h1 class="text-sm sm:text-base font-bold text-slate-900 leading-tight">COOLBOTTLE: Fungsi Eksponensial</h1>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button type="button" id="toggleScriptConfigBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="12" cy="5" rx="9" ry="3" />
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+            </svg>
+            <span id="scriptStatusLabel">Apps Script</span>
+          </button>
+          <button type="button" id="toggleGuideBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4" />
+              <path d="M12 8h.01" />
+            </svg>
+            <span>Pedoman Guru</span>
+          </button>
+          <span id="progressBadge" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+            0/8 Pernyataan
+          </span>
+        </div>
+      </div>
+
+      <!-- Bilah Progres Pengisian -->
+      <div class="mt-2.5 w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+        <div id="progressBar" class="bg-gradient-to-r from-sky-500 to-cyan-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notifikasi Toast Melayang (Pengganti alert()) -->
+  <div id="toastContainer" class="fixed bottom-5 right-4 left-4 sm:left-auto sm:w-96 z-50 pointer-events-none flex flex-col gap-2 no-print"></div>
+
+  <!-- Kontainer Utama -->
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+
+    <!-- Kartu Judul Utama & Pengantar -->
+    <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-700 via-sky-600 to-cyan-600 text-white p-6 sm:p-8 shadow-md print-shadow-none">
+      <!-- Dekorasi Kurva Eksponensial Latar -->
+      <svg class="absolute right-0 bottom-0 w-64 h-48 text-white/10 pointer-events-none" viewBox="0 0 200 150" fill="none">
+        <path d="M10 20 Q 55 110, 190 135" stroke="currentColor" stroke-width="6" stroke-linecap="round" />
+        <path d="M10 45 Q 75 120, 190 142" stroke="currentColor" stroke-width="3" stroke-dasharray="6 6" />
+        <circle cx="10" cy="20" r="5" fill="currentColor" />
+        <circle cx="85" cy="96" r="5" fill="currentColor" />
+        <circle cx="190" cy="135" r="5" fill="currentColor" />
+      </svg>
+
+      <div class="relative z-10 space-y-3">
+        <div class="inline-flex flex-wrap items-center gap-2">
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-sm text-white">
+            Asesmen Diri (Self-Assessment)
+          </span>
+          <span class="px-3 py-1 rounded-full text-xs font-medium bg-cyan-950/30 text-cyan-100">
+            Matematika SMA Kelas X
+          </span>
+        </div>
+
+        <h2 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight leading-snug">
+          PENILAIAN DIRI – PROFIL LULUSAN PROYEK STEM COOLBOTTLE
+        </h2>
+        <p class="text-sm sm:text-base font-medium text-sky-100">
+          Materi Pokok: Fungsi Eksponensial • Pemodelan Penurunan &amp; Pertahanan Suhu
+        </p>
+        <p class="text-xs sm:text-sm text-sky-50/90 max-w-2xl leading-relaxed pt-1">
+          Instrumen ini digunakan untuk membantu murid merefleksikan keterlibatan, sikap, dan kontribusinya selama mengikuti proyek STEM COOLBOTTLE. Isilah secara jujur sesuai pengalaman selama kegiatan proyek.
+        </p>
+      </div>
+    </section>
+
+    <!-- Panel Pedoman Penggunaan untuk Guru (Dapat dibuka/tutup) -->
+    <section id="teacherGuidePanel" class="hidden rounded-2xl bg-amber-50/90 border border-amber-200 p-5 sm:p-6 shadow-sm animate-fade-slide">
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+            </svg>
+          </div>
+          <div class="space-y-2 text-sm text-amber-950">
+            <h3 class="font-bold text-base text-amber-900">Pedoman Penggunaan untuk Guru &amp; Ketentuan Skor</h3>
+            <p class="leading-relaxed">
+              Instrumen ini merupakan <strong>penilaian diri (self-assessment)</strong>, bukan satu-satunya dasar penentuan nilai akhir. Guru dapat menggunakan hasilnya sebagai bahan refleksi dan triangulasi dengan observasi proses, penilaian produk, serta penilaian antarteman.
+            </p>
+            <div class="p-3.5 rounded-xl bg-white/80 border border-amber-200/80 text-xs sm:text-sm space-y-1">
+              <p class="font-semibold text-amber-900">Ketentuan Interpretasi Skor:</p>
+              <p class="text-amber-900/90 leading-relaxed">
+                Jumlahkan skor pada 8 pernyataan (<strong>rentang 8–40</strong>). Skor yang lebih tinggi menunjukkan bahwa murid menilai dirinya semakin konsisten menampilkan perilaku yang dinyatakan. Hasil sebaiknya dibahas secara reflektif, bukan untuk memberi label kepada murid.
+              </p>
+            </div>
+          </div>
+        </div>
+        <button type="button" id="closeGuideBtn" aria-label="Tutup pedoman" class="p-1.5 rounded-lg text-amber-700 hover:bg-amber-200/60 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- Panel Konfigurasi URL Google Apps Script (Untuk Guru) -->
+    <section id="scriptConfigPanel" class="hidden rounded-2xl bg-emerald-50/90 border border-emerald-200 p-5 sm:p-6 shadow-sm animate-fade-slide no-print">
+      <div class="flex items-start justify-between gap-4">
+        <div class="space-y-2.5 flex-1 text-sm text-emerald-950">
+          <h3 class="font-bold text-base text-emerald-900">Koneksi Google Apps Script (Rekap Otomatis ke Spreadsheet)</h3>
+          <p class="text-xs sm:text-sm text-emerald-900/90 leading-relaxed">
+            Tempelkan <strong>URL Web App Google Apps Script</strong> di bawah ini agar setiap hasil asesmen murid otomatis tersimpan ke Google Sheets guru.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-2 pt-1">
+            <input
+              type="url"
+              id="appsScriptUrlInput"
+              placeholder="https://script.google.com/macros/s/.../exec"
+              class="flex-1 px-3.5 py-2.5 rounded-xl border border-emerald-300 bg-white text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            <button type="button" id="saveScriptUrlBtn" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm transition shrink-0">
+              Simpan URL
+            </button>
+            <button type="button" id="clearScriptUrlBtn" class="px-3.5 py-2.5 rounded-xl bg-white hover:bg-rose-50 text-rose-600 border border-emerald-200 font-semibold text-xs sm:text-sm transition shrink-0">
+              Putuskan
+            </button>
+          </div>
+          <p id="scriptConfigFeedback" class="text-xs text-emerald-800 font-medium"></p>
+        </div>
+        <button type="button" id="closeScriptConfigBtn" aria-label="Tutup konfigurasi" class="p-1.5 rounded-lg text-emerald-700 hover:bg-emerald-200/60 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- Pesan Peringatan Validasi (Jika ada isian yang belum lengkap) -->
+    <div id="validationAlert" class="hidden rounded-2xl bg-rose-50 border border-rose-200 p-4 text-rose-800 text-sm flex items-start gap-3 animate-fade-slide no-print">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-rose-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <div>
+        <p class="font-semibold">Mohon lengkapi seluruh bagian asesmen terlebih dahulu:</p>
+        <p id="validationMessage" class="mt-0.5 text-rose-700"></p>
+      </div>
+    </div>
+
+    <!-- FORMULIR UTAMA ASESMEN -->
+    <form id="assessmentForm" novalidate class="space-y-6">
+
+      <!-- BAGIAN 1: IDENTITAS MURID -->
+      <section class="rounded-2xl bg-white border border-slate-200/90 p-5 sm:p-7 shadow-sm print-shadow-none space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 font-bold text-sm flex items-center justify-center">1</span>
+            <div>
+              <h3 class="text-lg font-bold text-slate-900">Bagian 1. Identitas Murid</h3>
+              <p class="text-xs text-slate-500">Lengkapi data diri Anda sesuai dengan kelompok proyek COOLBOTTLE</p>
+            </div>
+          </div>
+
+          <!-- Tombol Bantuan Demo & Reset untuk kemudahan pengujian -->
+          <div class="flex items-center gap-2 no-print">
+            <button type="button" id="fillDemoBtn" class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
+              Isi Contoh Demo
+            </button>
+            <button type="button" id="resetFormBtn" class="px-3 py-1.5 text-xs font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Nama Peserta Didik (Otomatis Huruf Kapital sesuai petunjuk file) -->
+          <div class="md:col-span-3 sm:col-span-2">
+            <label for="studentName" class="block text-sm font-semibold text-slate-700 mb-1.5">
+              Nama Peserta Didik <span class="text-xs font-normal text-sky-600">(tulis lengkap dengan huruf kapital)</span> <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="studentName"
+              name="studentName"
+              placeholder="CONTOH: RAKA PRATAMA WIJAYA"
+              required
+              class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white text-slate-900 font-medium uppercase tracking-wide placeholder:normal-case placeholder:font-normal placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition"
+            />
+          </div>
+
+          <!-- Kelompok -->
+          <div>
+            <label for="studentGroup" class="block text-sm font-semibold text-slate-700 mb-1.5">
+              Kelompok <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="studentGroup"
+              name="studentGroup"
+              placeholder="Contoh: Kelompok 2"
+              required
+              class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition"
+            />
+          </div>
+
+          <!-- Kelas -->
+          <div class="md:col-span-2">
+            <label for="studentClass" class="block text-sm font-semibold text-slate-700 mb-1.5">
+              Kelas <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="studentClass"
+              name="studentClass"
+              placeholder="Contoh: X-1 / X-IPA-2 / X-Merdeka 3"
+              required
+              class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- BAGIAN 2: PENILAIAN DIRI (8 PERNYATAAN SKALA 1-5) -->
+      <section class="rounded-2xl bg-white border border-slate-200/90 p-5 sm:p-7 shadow-sm print-shadow-none space-y-5">
+        <div class="border-b border-slate-100 pb-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 font-bold text-sm flex items-center justify-center">2</span>
+              <div>
+                <h3 class="text-lg font-bold text-slate-900">Bagian 2. Penilaian Diri</h3>
+                <p class="text-xs text-slate-500">Pilih satu angka (1–5) yang paling sesuai dengan keadaan diri Anda selama mengerjakan proyek COOLBOTTLE</p>
+              </div>
+            </div>
+            <div class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-sky-50 text-sky-700 border border-sky-200">
+              Skor Sementara: <span id="liveScoreDisplay">0</span> / 40
+            </div>
+          </div>
+
+          <!-- Keterangan Skala Penilaian 1 - 5 -->
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-center">
+              <span class="inline-block w-6 h-6 rounded-full bg-rose-100 text-rose-700 font-bold text-xs leading-6 mb-1">1</span>
+              <p class="text-[11px] font-medium text-slate-700 leading-tight">Sangat Tidak Sesuai</p>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-center">
+              <span class="inline-block w-6 h-6 rounded-full bg-orange-100 text-orange-700 font-bold text-xs leading-6 mb-1">2</span>
+              <p class="text-[11px] font-medium text-slate-700 leading-tight">Tidak Sesuai</p>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-center">
+              <span class="inline-block w-6 h-6 rounded-full bg-amber-100 text-amber-700 font-bold text-xs leading-6 mb-1">3</span>
+              <p class="text-[11px] font-medium text-slate-700 leading-tight">Cukup Sesuai</p>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-center">
+              <span class="inline-block w-6 h-6 rounded-full bg-teal-100 text-teal-700 font-bold text-xs leading-6 mb-1">4</span>
+              <p class="text-[11px] font-medium text-slate-700 leading-tight">Sesuai</p>
+            </div>
+            <div class="col-span-2 sm:col-span-1 p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-center">
+              <span class="inline-block w-6 h-6 rounded-full bg-sky-100 text-sky-700 font-bold text-xs leading-6 mb-1">5</span>
+              <p class="text-[11px] font-medium text-slate-700 leading-tight">Sangat Sesuai</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Daftar 8 Pernyataan Penilaian Diri (Dirender dinamis oleh JavaScript) -->
+        <div id="statementsContainer" class="space-y-4"></div>
+      </section>
+
+      <!-- BAGIAN 3: REFLEKSI SINGKAT -->
+      <section class="rounded-2xl bg-white border border-slate-200/90 p-5 sm:p-7 shadow-sm print-shadow-none space-y-5">
+        <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+          <span class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 font-bold text-sm flex items-center justify-center">3</span>
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">Bagian 3. Refleksi Singkat</h3>
+            <p class="text-xs text-slate-500">Jawablah pertanyaan berikut secara singkat dan jujur</p>
+          </div>
+        </div>
+
+        <div class="space-y-5">
+          <!-- Pertanyaan Refleksi 1 -->
+          <div>
+            <label for="reflection1" class="block text-sm font-semibold text-slate-800 mb-1.5">
+              1. Hal yang paling saya kontribusikan dalam proyek COOLBOTTLE adalah: <span class="text-rose-500">*</span>
+            </label>
+            <textarea
+              id="reflection1"
+              name="reflection1"
+              rows="3"
+              required
+              placeholder="Tuliskan kontribusi nyata Anda dalam merancang, menguji suhu, atau memodelkan fungsi eksponensial pada proyek COOLBOTTLE..."
+              class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition"
+            ></textarea>
+          </div>
+
+          <!-- Pertanyaan Refleksi 2 -->
+          <div>
+            <label for="reflection2" class="block text-sm font-semibold text-slate-800 mb-1.5">
+              2. Hal yang masih perlu saya tingkatkan ketika bekerja dalam kelompok adalah: <span class="text-rose-500">*</span>
+            </label>
+            <textarea
+              id="reflection2"
+              name="reflection2"
+              rows="3"
+              required
+              placeholder="Tuliskan aspek kerja sama, komunikasi, atau ketelitian analisis yang ingin Anda perbaiki ke depannya..."
+              class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition"
+            ></textarea>
+          </div>
+
+          <!-- Pertanyaan Refleksi 3 -->
+          <div>
+            <label for="reflection3" class="block text-sm font-semibold text-slate-800 mb-1.5">
+              3. Pengetahuan atau keterampilan baru yang saya peroleh dari proyek ini adalah: <span class="text-rose-500">*</span>
+            </label>
+            <textarea
+              id="reflection3"
+              name="reflection3"
+              rows="3"
+              required
+              placeholder="Tuliskan pemahaman baru mengenai fungsi eksponensial, faktor pengali/peluruhan suhu, isolasi termal, atau keterampilan STEM..."
+              class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition"
+            ></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tombol Kirim & Hitung Nilai Akhir -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 no-print">
+        <p class="text-xs text-slate-500 text-center sm:text-left">
+          Pastikan seluruh identitas, 8 pernyataan skala, dan 3 pertanyaan refleksi telah terisi dengan jujur.
+        </p>
+        <button
+          type="submit"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 text-white font-bold text-sm sm:text-base shadow-md hover:shadow-lg transition-all cursor-pointer"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+          <span>Selesai &amp; Hitung Nilai Asesmen</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- BAGIAN HASIL AKHIR & INTERPRETASI PENILAIAN (Muncul setelah form dikirim) -->
+    <section id="resultSection" class="hidden space-y-6 animate-fade-slide">
+      <div class="rounded-2xl bg-white border-2 border-sky-200 p-6 sm:p-8 shadow-md print-shadow-none space-y-6">
+
+        <!-- Header Laporan Hasil -->
+        <div class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-5">
+          <div>
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                Asesmen Selesai Direkam
+              </span>
+              <span id="sheetSyncStatusBadge" class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                Penyimpanan Lokal
+              </span>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-slate-900">
+              Hasil Penilaian Diri – Proyek STEM COOLBOTTLE
+            </h3>
+            <p id="resultTimestamp" class="text-xs text-slate-500 mt-1"></p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 no-print">
+            <button type="button" id="copyReportBtn" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              <span>Salin Hasil</span>
+            </button>
+            <button type="button" id="printReportBtn" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-white hover:bg-slate-900 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9" />
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <rect x="6" y="14" width="12" height="8" />
+              </svg>
+              <span>Cetak / Simpan PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Ringkasan Identitas Murid -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Nama Peserta Didik</p>
+            <p id="resName" class="text-sm sm:text-base font-bold text-slate-900 mt-0.5">-</p>
+          </div>
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Kelompok</p>
+            <p id="resGroup" class="text-sm sm:text-base font-bold text-slate-900 mt-0.5">-</p>
+          </div>
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Kelas</p>
+            <p id="resClass" class="text-sm sm:text-base font-bold text-slate-900 mt-0.5">-</p>
+          </div>
+        </div>
+
+        <!-- Kartu Perolehan Skor & Nilai -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+          <!-- Total Skor (Rentang 8 - 40 sesuai ketentuan file) -->
+          <div class="md:col-span-5 rounded-2xl bg-gradient-to-br from-sky-600 to-cyan-600 text-white p-5 flex flex-col justify-between shadow-sm">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-sky-100">Jumlah Skor Penilaian Diri</p>
+              <div class="flex items-baseline gap-2 mt-2">
+                <span id="resTotalScore" class="text-4xl sm:text-5xl font-extrabold">0</span>
+                <span class="text-lg font-semibold text-sky-100">/ 40</span>
+              </div>
+              <p class="text-xs text-sky-100 mt-1">Rentang Skor Instrumen: 8 – 40</p>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-white/20 flex items-center justify-between text-xs">
+              <span>Konversi Skala 100: <strong id="resPercentScore" class="text-sm">0</strong></span>
+              <span>Rata-rata: <strong id="resAvgScore" class="text-sm">0.0</strong> / 5</span>
+            </div>
+          </div>
+
+          <!-- Interpretasi Reflektif Sesuai Ketentuan File -->
+          <div class="md:col-span-7 rounded-2xl bg-sky-50/70 border border-sky-200/90 p-5 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-sky-800">Interpretasi Reflektif Skor</span>
+                <span id="resConsistencyBadge" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-600 text-white">
+                  -
+                </span>
+              </div>
+              <p id="resInterpretationText" class="text-sm text-slate-700 leading-relaxed"></p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-white border border-sky-100 text-xs text-slate-600 leading-relaxed">
+              <strong>Ketentuan Penilaian:</strong> Jumlah skor pada 8 pernyataan berada pada rentang <strong>8–40</strong>. Skor yang lebih tinggi menunjukkan bahwa murid menilai dirinya semakin konsisten menampilkan perilaku yang dinyatakan. Hasil ini dibahas secara reflektif, bukan untuk memberi label kepada murid.
+            </div>
+          </div>
+        </div>
+
+        <!-- Rincian Skor per Pernyataan (Visualisasi Batang) -->
+        <div class="space-y-3">
+          <h4 class="text-sm font-bold uppercase tracking-wider text-slate-700">Rincian Skor Setiap Pernyataan (8 Indikator)</h4>
+          <div id="resBreakdownList" class="space-y-2.5"></div>
+        </div>
+
+        <!-- Ringkasan Jawaban Refleksi Singkat -->
+        <div class="space-y-3 pt-2">
+          <h4 class="text-sm font-bold uppercase tracking-wider text-slate-700">Catatan Refleksi Singkat Murid</h4>
+          <div class="grid grid-cols-1 gap-3">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+              <p class="text-xs font-semibold text-sky-700">1. Hal yang paling saya kontribusikan dalam proyek COOLBOTTLE:</p>
+              <p id="resRef1" class="text-sm text-slate-800 mt-1 whitespace-pre-line"></p>
+            </div>
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+              <p class="text-xs font-semibold text-sky-700">2. Hal yang masih perlu saya tingkatkan ketika bekerja dalam kelompok:</p>
+              <p id="resRef2" class="text-sm text-slate-800 mt-1 whitespace-pre-line"></p>
+            </div>
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+              <p class="text-xs font-semibold text-sky-700">3. Pengetahuan atau keterampilan baru yang saya peroleh dari proyek ini:</p>
+              <p id="resRef3" class="text-sm text-slate-800 mt-1 whitespace-pre-line"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Catatan Pedoman Guru di Bagian Akhir Laporan -->
+        <div class="p-4 rounded-xl bg-amber-50/80 border border-amber-200 text-xs text-amber-950 leading-relaxed">
+          <p class="font-bold text-amber-900 mb-1">Catatan Pedoman Penggunaan untuk Guru:</p>
+          <p>
+            Instrumen ini merupakan penilaian diri (<em>self-assessment</em>), bukan satu-satunya dasar penentuan nilai akhir. Guru dapat menggunakan hasilnya sebagai bahan refleksi dan triangulasi dengan observasi proses, penilaian produk, serta penilaian antarteman.
+          </p>
+        </div>
+
+        <!-- Tombol Kembali Mengedit -->
+        <div class="pt-2 flex justify-end no-print">
+          <button type="button" id="editAnswersBtn" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            <span>Ubah / Periksa Kembali Jawaban</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="max-w-4xl mx-auto px-4 sm:px-6 py-6 text-center text-xs text-slate-400 no-print">
+    Instrumen Penilaian Diri Proyek STEM COOLBOTTLE • Matematika Kelas X (Fungsi Eksponensial)
+  </footer>
+
+  <script>
+    /**
+     * Data 8 pernyataan asesmen diri yang diambil persis dari dokumen:
+     * "4-3 Asesmen_Diri_Profil_Lulusan_STEM_COOLBOTTLE_Kelas_X.docx"
+     */
+    const ASSESSMENT_STATEMENTS = [
+      {
+        id: 1,
+        aspect: 'Kolaborasi & Tanggung Jawab',
+        text: 'Saya berpartisipasi aktif, menyelesaikan tanggung jawab, dan membantu anggota kelompok saat merancang, membuat, serta menguji prototipe COOLBOTTLE.'
+      },
+      {
+        id: 2,
+        aspect: 'Komunikasi & Sikap Santun',
+        text: 'Saya mendengarkan pendapat teman, menghargai perbedaan ide, dan berdiskusi dengan santun ketika kelompok menghadapi kendala selama proyek.'
+      },
+      {
+        id: 3,
+        aspect: 'Kreativitas Desain Prototipe',
+        text: 'Saya berinisiatif mengemukakan ide kreatif untuk memilih atau memperbaiki bahan dan rancangan penutup botol agar dapat mempertahankan suhu air dingin.'
+      },
+      {
+        id: 4,
+        aspect: 'Ketelitian & Model Fungsi Eksponensial',
+        text: 'Saya teliti dalam melakukan pengukuran suhu, mencatat data, menghitung selisih suhu, serta menggunakan model fungsi eksponensial untuk menganalisis hasil pengujian.'
+      },
+      {
+        id: 5,
+        aspect: 'Literasi Data, Grafik & Teknologi',
+        text: 'Saya aktif menggunakan tabel, grafik, atau teknologi yang tersedia untuk menyajikan hasil analisis dan menjelaskan hubungan nilai faktor pengali eksponensial dengan kinerja prototipe.'
+      },
+      {
+        id: 6,
+        aspect: 'Keterkaitan STEM & Analisis Biaya-Manfaat',
+        text: 'Saya berusaha memahami keterkaitan konsep Matematika dan Fisika dalam proyek, serta mempertimbangkan biaya bahan dan manfaat produk ketika menentukan rancangan.'
+      },
+      {
+        id: 7,
+        aspect: 'Penyusunan Laporan & Presentasi',
+        text: 'Saya ikut menyusun laporan dan menyampaikan hasil proyek secara runtut, menggunakan bahasa Indonesia yang jelas dan santun.'
+      },
+      {
+        id: 8,
+        aspect: 'Evaluasi Berbasis Data & Perbaikan',
+        text: 'Saya bersedia menerima masukan, mengevaluasi kekurangan prototipe, dan mengusulkan perbaikan berdasarkan data hasil pengujian.'
+      }
+    ];
+
+    // Label singkat untuk masing-masing skor skala 1 - 5
+    const SCALE_LABELS = {
+      1: 'Sangat Tidak Sesuai',
+      2: 'Tidak Sesuai',
+      3: 'Cukup Sesuai',
+      4: 'Sesuai',
+      5: 'Sangat Sesuai'
+    };
+
+    // URL Web App Google Apps Script yang terhubung secara permanen
+    const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbya457I9MdFESwXprCmn9XiqSUlaUv2AkY1ZFmp30n_k_aZwRnYGeB7UCin5xv7-ZQk/exec';
+    const STORAGE_KEY_SCRIPT_URL = 'coolbottle_apps_script_url';
+
+    // Menyimpan state skor yang dipilih murid { 1: score, ..., 8: score }
+    const selectedScores = {};
+
+    // Referensi elemen DOM
+    const statementsContainer = document.getElementById('statementsContainer');
+    const assessmentForm = document.getElementById('assessmentForm');
+    const progressBar = document.getElementById('progressBar');
+    const progressBadge = document.getElementById('progressBadge');
+    const liveScoreDisplay = document.getElementById('liveScoreDisplay');
+    const validationAlert = document.getElementById('validationAlert');
+    const validationMessage = document.getElementById('validationMessage');
+    const resultSection = document.getElementById('resultSection');
+
+    /**
+     * Merender 8 kartu pernyataan penilaian diri secara dinamis ke dalam DOM
+     */
+    function renderStatements() {
+      statementsContainer.innerHTML = '';
+
+      ASSESSMENT_STATEMENTS.forEach((item) => {
+        const card = document.createElement('div');
+        card.id = `statement-card-${item.id}`;
+        card.className = 'p-4 sm:p-5 rounded-2xl border border-slate-200/90 bg-slate-50/40 hover:border-sky-200 transition-colors space-y-4';
+
+        // Bagian atas kartu: Nomor, Badge Aspek STEM, dan Teks Pernyataan
+        const headerHtml = `
+          <div class="flex items-start gap-3">
+            <span class="w-7 h-7 rounded-lg bg-sky-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+              ${item.id}
+            </span>
+            <div class="space-y-1.5 flex-1">
+              <span class="inline-block px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-sky-100/80 text-sky-800">
+                ${item.aspect}
+              </span>
+              <p class="text-sm sm:text-[15px] font-medium text-slate-800 leading-relaxed">
+                ${item.text}
+              </p>
+            </div>
+          </div>
+        `;
+
+        // Bagian pilihan skala 1 sampai 5 yang ramah sentuhan (touch-friendly)
+        let buttonsHtml = `<div class="grid grid-cols-5 gap-2 pt-1 sm:pl-10" role="radiogroup" aria-label="Skala penilaian pernyataan ${item.id}">`;
+        for (let score = 1; score <= 5; score++) {
+          const isSelected = selectedScores[item.id] === score;
+          buttonsHtml += `
+            <button
+              type="button"
+              data-statement="${item.id}"
+              data-score="${score}"
+              aria-pressed="${isSelected}"
+              class="scale-btn group flex flex-col items-center justify-center py-2.5 px-1.5 rounded-xl border text-center transition-all cursor-pointer min-h-[58px] ${
+                isSelected
+                  ? 'bg-sky-600 border-sky-600 text-white shadow-sm ring-2 ring-sky-300'
+                  : 'bg-white border-slate-200 text-slate-700 hover:border-sky-400 hover:bg-sky-50/60'
+              }"
+            >
+              <span class="text-base sm:text-lg font-extrabold leading-none">${score}</span>
+              <span class="text-[10px] mt-1 font-medium leading-tight line-clamp-1 ${
+                isSelected ? 'text-sky-100' : 'text-slate-400 group-hover:text-sky-700'
+              }">
+                ${SCALE_LABELS[score]}
+              </span>
+            </button>
+          `;
+        }
+        buttonsHtml += `</div>`;
+
+        card.innerHTML = headerHtml + buttonsHtml;
+        statementsContainer.appendChild(card);
+      });
+
+      // Menambahkan event listener klik pada setiap tombol skala
+      document.querySelectorAll('.scale-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const statementId = parseInt(btn.getAttribute('data-statement'), 10);
+          const score = parseInt(btn.getAttribute('data-score'), 10);
+          selectScore(statementId, score);
+        });
+      });
+    }
+
+    /**
+     * Memperbarui skor pilihan murid untuk pernyataan tertentu & menyegarkan tampilan
+     */
+    function selectScore(statementId, score) {
+      selectedScores[statementId] = score;
+
+      // Hapus penanda error pada kartu pernyataan jika sebelumnya belum diisi
+      const card = document.getElementById(`statement-card-${statementId}`);
+      if (card) {
+        card.classList.remove('border-rose-400', 'bg-rose-50/40');
+      }
+
+      // Perbarui gaya visual tombol skala pada baris pernyataan terkait
+      const rowButtons = document.querySelectorAll(`.scale-btn[data-statement="${statementId}"]`);
+      rowButtons.forEach((btn) => {
+        const btnScore = parseInt(btn.getAttribute('data-score'), 10);
+        const labelSpan = btn.querySelectorAll('span')[1];
+
+        if (btnScore === score) {
+          btn.setAttribute('aria-pressed', 'true');
+          btn.className = 'scale-btn group flex flex-col items-center justify-center py-2.5 px-1.5 rounded-xl border text-center transition-all cursor-pointer min-h-[58px] bg-sky-600 border-sky-600 text-white shadow-sm ring-2 ring-sky-300';
+          if (labelSpan) labelSpan.className = 'text-[10px] mt-1 font-medium leading-tight line-clamp-1 text-sky-100';
+        } else {
+          btn.setAttribute('aria-pressed', 'false');
+          btn.className = 'scale-btn group flex flex-col items-center justify-center py-2.5 px-1.5 rounded-xl border text-center transition-all cursor-pointer min-h-[58px] bg-white border-slate-200 text-slate-700 hover:border-sky-400 hover:bg-sky-50/60';
+          if (labelSpan) labelSpan.className = 'text-[10px] mt-1 font-medium leading-tight line-clamp-1 text-slate-400 group-hover:text-sky-700';
+        }
+      });
+
+      updateProgressAndLiveScore();
+    }
+
+    /**
+     * Menghitung dan memperbarui indikator progres pengisian serta skor sementara
+     */
+    function updateProgressAndLiveScore() {
+      const answeredCount = Object.keys(selectedScores).length;
+      const currentTotal = Object.values(selectedScores).reduce((sum, val) => sum + val, 0);
+
+      // Hitung kelengkapan identitas & refleksi juga untuk bilah progres menyeluruh
+      const nameFilled = document.getElementById('studentName').value.trim().length > 0 ? 1 : 0;
+      const groupFilled = document.getElementById('studentGroup').value.trim().length > 0 ? 1 : 0;
+      const classFilled = document.getElementById('studentClass').value.trim().length > 0 ? 1 : 0;
+      const ref1Filled = document.getElementById('reflection1').value.trim().length > 0 ? 1 : 0;
+      const ref2Filled = document.getElementById('reflection2').value.trim().length > 0 ? 1 : 0;
+      const ref3Filled = document.getElementById('reflection3').value.trim().length > 0 ? 1 : 0;
+
+      const totalSteps = 14; // 3 identitas + 8 pernyataan + 3 refleksi
+      const completedSteps = nameFilled + groupFilled + classFilled + answeredCount + ref1Filled + ref2Filled + ref3Filled;
+      const percentage = Math.round((completedSteps / totalSteps) * 100);
+
+      progressBar.style.width = `${percentage}%`;
+      progressBadge.textContent = `${answeredCount}/8 Pernyataan`;
+      liveScoreDisplay.textContent = currentTotal;
+    }
+
+    /**
+     * Menampilkan pesan toast non-blocking sebagai pengganti alert()
+     */
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+
+      const colors = {
+        info: 'bg-slate-900 text-white border-slate-700',
+        success: 'bg-emerald-700 text-white border-emerald-600',
+        warning: 'bg-amber-700 text-white border-amber-600'
+      };
+
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-lg text-xs sm:text-sm font-medium flex items-center justify-between gap-3 animate-fade-slide ${colors[type] || colors.info}`;
+      toast.innerHTML = `<span>${message}</span>`;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    /**
+     * Menyusun interpretasi reflektif berdasarkan total skor (rentang 8 - 40)
+     * sesuai ketentuan pada file tanpa memberi label negatif kepada murid
+     */
+    function getReflectiveInterpretation(totalScore) {
+      if (totalScore >= 34) {
+        return {
+          badge: 'Konsistensi Sangat Tinggi (34–40)',
+          description:
+            'Anda menilai diri Anda sangat konsisten dalam berpartisipasi aktif, berkolaborasi secara santun, serta menerapkan konsep fungsi eksponensial dan analisis data dalam proyek STEM COOLBOTTLE. Pertahankan semangat reflektif ini dan terus kembangkan kemampuan berpikir kritis saat mengevaluasi model matematika.'
+        };
+      } else if (totalScore >= 26) {
+        return {
+          badge: 'Konsistensi Baik (26–33)',
+          description:
+            'Anda menilai diri Anda sudah cukup konsisten menjalankan peran dan menerapkan analisis fungsi eksponensial dalam proyek COOLBOTTLE. Beberapa indikator yang skornya masih di bawah 4 dapat menjadi fokus refleksi bersama guru dan teman kelompok untuk peningkatan pada proyek berikutnya.'
+        };
+      } else if (totalScore >= 18) {
+        return {
+          badge: 'Cukup Konsisten (18–25)',
+          description:
+            'Anda menilai diri Anda mulai terlibat dalam tahapan proyek COOLBOTTLE, namun masih terdapat beberapa aspek kolaborasi, ketelitian pengukuran, atau pemodelan eksponensial yang perlu diperkuat. Diskusikan hambatan yang Anda alami secara terbuka sebagai bahan pembelajaran.'
+        };
+      } else {
+        return {
+          badge: 'Perlu Penguatan Reflektif (8–17)',
+          description:
+            'Hasil penilaian diri menunjukkan Anda merasa belum optimal terlibat atau masih menemui kendala dalam memadukan kerja kelompok dan konsep fungsi eksponensial pada proyek COOLBOTTLE. Gunakan hasil ini sebagai bahan dialog reflektif bersama guru untuk menemukan strategi belajar yang lebih sesuai.'
+        };
+      }
+    }
+
+    /**
+     * Memvalidasi formulir, menghitung skor akhir, dan menampilkan panel hasil
+     */
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      validationAlert.classList.add('hidden');
+
+      const nameVal = document.getElementById('studentName').value.trim().toUpperCase();
+      const groupVal = document.getElementById('studentGroup').value.trim();
+      const classVal = document.getElementById('studentClass').value.trim();
+      const ref1Val = document.getElementById('reflection1').value.trim();
+      const ref2Val = document.getElementById('reflection2').value.trim();
+      const ref3Val = document.getElementById('reflection3').value.trim();
+
+      // Cek kelengkapan identitas
+      if (!nameVal || !groupVal || !classVal) {
+        validationMessage.textContent = 'Identitas murid (Nama lengkap huruf kapital, Kelompok, dan Kelas) wajib diisi.';
+        validationAlert.classList.remove('hidden');
+        document.getElementById('studentName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      // Cek kelengkapan 8 pernyataan skala
+      const missingStatements = [];
+      ASSESSMENT_STATEMENTS.forEach((item) => {
+        const card = document.getElementById(`statement-card-${item.id}`);
+        if (!selectedScores[item.id]) {
+          missingStatements.push(item.id);
+          if (card) card.classList.add('border-rose-400', 'bg-rose-50/40');
+        }
+      });
+
+      if (missingStatements.length > 0) {
+        validationMessage.textContent = `Anda belum memilih skala (1–5) pada pernyataan nomor: ${missingStatements.join(', ')}.`;
+        validationAlert.classList.remove('hidden');
+        const firstMissingCard = document.getElementById(`statement-card-${missingStatements[0]}`);
+        if (firstMissingCard) {
+          firstMissingCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+
+      // Cek kelengkapan refleksi singkat
+      if (!ref1Val || !ref2Val || !ref3Val) {
+        validationMessage.textContent = 'Ketiga pertanyaan pada Bagian 3 (Refleksi Singkat) wajib diisi secara jujur.';
+        validationAlert.classList.remove('hidden');
+        document.getElementById('reflection1').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      // Perhitungan skor sesuai ketentuan file (jumlah 8 pernyataan, rentang 8 - 40)
+      const totalScore = Object.values(selectedScores).reduce((acc, curr) => acc + curr, 0);
+      const convertedScale100 = Math.round((totalScore / 40) * 100);
+      const averageScore = (totalScore / 8).toFixed(2);
+      const interpretation = getReflectiveInterpretation(totalScore);
+
+      // Mengisi data ke tampilan Hasil Akhir
+      const now = new Date();
+      const formattedDate = now.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      document.getElementById('resultTimestamp').textContent = `Waktu Pengisian: ${formattedDate}`;
+      document.getElementById('resName').textContent = nameVal;
+      document.getElementById('resGroup').textContent = groupVal;
+      document.getElementById('resClass').textContent = classVal;
+      document.getElementById('resTotalScore').textContent = totalScore;
+      document.getElementById('resPercentScore').textContent = convertedScale100;
+      document.getElementById('resAvgScore').textContent = averageScore;
+      document.getElementById('resConsistencyBadge').textContent = interpretation.badge;
+      document.getElementById('resInterpretationText').textContent = interpretation.description;
+
+      // Render rincian skor per indikator
+      const breakdownList = document.getElementById('resBreakdownList');
+      breakdownList.innerHTML = '';
+
+      ASSESSMENT_STATEMENTS.forEach((item) => {
+        const sc = selectedScores[item.id];
+        const barWidth = (sc / 5) * 100;
+        const row = document.createElement('div');
+        row.className = 'p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5';
+        row.innerHTML = `
+          <div class="flex items-start justify-between gap-3 text-xs sm:text-sm">
+            <span class="font-medium text-slate-800"><strong>${item.id}.</strong> ${item.aspect}</span>
+            <span class="shrink-0 font-bold text-sky-700">${sc} / 5 <span class="font-normal text-slate-500">(${SCALE_LABELS[sc]})</span></span>
+          </div>
+          <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+            <div class="bg-sky-600 h-2 rounded-full" style="width: ${barWidth}%"></div>
+          </div>
+        `;
+        breakdownList.appendChild(row);
+      });
+
+      // Isi jawaban refleksi
+      document.getElementById('resRef1').textContent = ref1Val;
+      document.getElementById('resRef2').textContent = ref2Val;
+      document.getElementById('resRef3').textContent = ref3Val;
+
+      // Tampilkan bagian hasil & gulir ke sana
+      resultSection.classList.remove('hidden');
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast('Nilai asesmen diri berhasil dihitung!', 'success');
+
+      // Kirim otomatis ke Google Apps Script jika URL Web App tersedia atau dihosting di Apps Script
+      const payloadToSheet = {
+        timestamp: formattedDate,
+        studentName: nameVal,
+        studentGroup: groupVal,
+        studentClass: classVal,
+        scores: { ...selectedScores },
+        totalScore: totalScore,
+        convertedScale100: convertedScale100,
+        averageScore: averageScore,
+        interpretationBadge: interpretation.badge,
+        reflection1: ref1Val,
+        reflection2: ref2Val,
+        reflection3: ref3Val
+      };
+      sendDataToGoogleSheets(payloadToSheet);
+    }
+
+    /**
+     * Mengambil URL Web App Google Apps Script dari parameter URL, localStorage, atau konstanta default
+     */
+    function getAppsScriptUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const paramUrl = urlParams.get('scriptUrl');
+      if (paramUrl && paramUrl.trim()) {
+        localStorage.setItem(STORAGE_KEY_SCRIPT_URL, paramUrl.trim());
+        return paramUrl.trim();
+      }
+      const savedUrl = localStorage.getItem(STORAGE_KEY_SCRIPT_URL);
+      if (savedUrl && savedUrl.trim()) {
+        return savedUrl.trim();
+      }
+      return DEFAULT_APPS_SCRIPT_URL.trim();
+    }
+
+    /**
+     * Memperbarui indikator status koneksi Apps Script pada bilah navigasi
+     */
+    function refreshScriptConnectionUI() {
+      const url = getAppsScriptUrl();
+      const statusLabel = document.getElementById('scriptStatusLabel');
+      const urlInput = document.getElementById('appsScriptUrlInput');
+      const feedback = document.getElementById('scriptConfigFeedback');
+
+      if (urlInput) urlInput.value = url;
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        if (statusLabel) statusLabel.textContent = 'Apps Script Aktif';
+        if (feedback) feedback.textContent = 'Terhubung langsung melalui lingkungan Google Apps Script.';
+      } else if (url) {
+        if (statusLabel) statusLabel.textContent = 'Sheets Terhubung';
+        if (feedback) {
+          feedback.textContent = url === DEFAULT_APPS_SCRIPT_URL.trim()
+            ? 'Status: Terhubung permanen ke endpoint Google Apps Script Anda.'
+            : 'Status: Terhubung ke endpoint Google Apps Script kustom.';
+        }
+      } else {
+        if (statusLabel) statusLabel.textContent = 'Hubungkan Sheets';
+        if (feedback) feedback.textContent = 'Belum ada URL Web App yang disimpan (saat ini berjalan dalam mode lokal).';
+      }
+    }
+
+    /**
+     * Mengirim hasil asesmen ke Google Apps Script (mendukung google.script.run maupun fetch POST)
+     */
+    async function sendDataToGoogleSheets(payload) {
+      const syncBadge = document.getElementById('sheetSyncStatusBadge');
+      const scriptUrl = getAppsScriptUrl();
+
+      // Jalur 1: Jika file HTML dijalankan langsung dari Google Apps Script (HtmlService)
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        syncBadge.className = 'inline-block px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800';
+        syncBadge.textContent = 'Mengirim ke Google Sheets...';
+
+        google.script.run
+          .withSuccessHandler(() => {
+            syncBadge.className = 'inline-block px-3 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800';
+            syncBadge.textContent = 'Tersimpan di Google Sheets';
+            showToast('Data asesmen berhasil direkap ke Google Sheets!', 'success');
+          })
+          .withFailureHandler(() => {
+            syncBadge.className = 'inline-block px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800';
+            syncBadge.textContent = 'Gagal Kirim ke Sheets';
+            showToast('Gagal menyimpan ke Google Sheets. Silakan gunakan tombol Salin/PDF.', 'warning');
+          })
+          .simpanDataAsesmen(payload);
+        return;
+      }
+
+      // Jalur 2: Jika menggunakan URL Web App Google Apps Script eksternal
+      if (!scriptUrl) {
+        syncBadge.className = 'inline-block px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700';
+        syncBadge.textContent = 'Mode Lokal (URL Sheets belum diatur)';
+        return;
+      }
+
+      syncBadge.className = 'inline-block px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800';
+      syncBadge.textContent = 'Mengirim ke Google Sheets...';
+
+      try {
+        // Menggunakan text/plain agar menghindari preflight CORS di Google Apps Script
+        await fetch(scriptUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        syncBadge.className = 'inline-block px-3 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800';
+        syncBadge.textContent = 'Terkirim ke Google Sheets';
+        showToast('Hasil asesmen berhasil dikirim ke Google Sheets!', 'success');
+      } catch (err) {
+        syncBadge.className = 'inline-block px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800';
+        syncBadge.textContent = 'Gagal Terhubung ke Sheets';
+        showToast('Gagal mengirim ke Google Sheets. Periksa koneksi internet atau URL Web App.', 'warning');
+      }
+    }
+
+    /**
+     * Menyalin ringkasan hasil asesmen ke clipboard menggunakan document.execCommand('copy')
+     */
+    function copyAssessmentReport() {
+      const nameVal = document.getElementById('resName').textContent;
+      const groupVal = document.getElementById('resGroup').textContent;
+      const classVal = document.getElementById('resClass').textContent;
+      const totalScore = document.getElementById('resTotalScore').textContent;
+      const percentScore = document.getElementById('resPercentScore').textContent;
+      const badge = document.getElementById('resConsistencyBadge').textContent;
+
+      let details = '';
+      ASSESSMENT_STATEMENTS.forEach((item) => {
+        const sc = selectedScores[item.id] || 0;
+        details += `${item.id}. ${item.aspect}: ${sc}/5 (${SCALE_LABELS[sc]})\n`;
+      });
+
+      const reportText = [
+        'HASIL PENILAIAN DIRI – PROYEK STEM COOLBOTTLE',
+        'Materi Pokok: Fungsi Eksponensial (Matematika Kelas X)',
+        '--------------------------------------------------',
+        `Nama Peserta Didik : ${nameVal}`,
+        `Kelompok           : ${groupVal}`,
+        `Kelas              : ${classVal}`,
+        `Jumlah Skor        : ${totalScore} / 40 (Rentang 8–40)`,
+        `Konversi Skala 100 : ${percentScore}`,
+        `Interpretasi       : ${badge}`,
+        '',
+        'Rincian Skor per Pernyataan:',
+        details.trim(),
+        '',
+        'Refleksi Singkat:',
+        `1. Kontribusi utama: ${document.getElementById('resRef1').textContent}`,
+        `2. Hal yang perlu ditingkatkan: ${document.getElementById('resRef2').textContent}`,
+        `3. Pengetahuan/keterampilan baru: ${document.getElementById('resRef3').textContent}`
+      ].join('\n');
+
+      // Menggunakan textarea sementara + document.execCommand('copy') agar kompatibel dengan iFrame
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = reportText;
+      tempTextArea.style.position = 'fixed';
+      tempTextArea.style.left = '-9999px';
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+
+      try {
+        document.execCommand('copy');
+        showToast('Laporan hasil asesmen berhasil disalin ke clipboard!', 'success');
+      } catch (err) {
+        showToast('Gagal menyalin teks. Silakan gunakan tombol Cetak / PDF.', 'warning');
+      } finally {
+        document.body.removeChild(tempTextArea);
+      }
+    }
+
+    /**
+     * Mengisi contoh jawaban demo untuk memudahkan pengujian aplikasi
+     */
+    function fillDemoData() {
+      document.getElementById('studentName').value = 'NADIA PUTRI RAMADHANI';
+      document.getElementById('studentGroup').value = 'Kelompok 3';
+      document.getElementById('studentClass').value = 'X-2';
+
+      const demoScores = { 1: 5, 2: 4, 3: 4, 4: 5, 5: 5, 6: 4, 7: 4, 8: 5 };
+      Object.entries(demoScores).forEach(([id, sc]) => {
+        selectScore(parseInt(id, 10), sc);
+      });
+
+      document.getElementById('reflection1').value =
+        'Saya berperan aktif mengukur perubahan suhu air dingin setiap 5 menit menggunakan termometer digital, mencatat data ke dalam tabel, serta menentukan basis peluruhan eksponensial b pada fungsi T(t) = Ta + (T0 - Ta) * b^t.';
+      document.getElementById('reflection2').value =
+        'Saya perlu meningkatkan manajemen waktu saat berdiskusi memilih bahan isolator tutup botol agar pengujian prototipe dapat dilakukan lebih cepat.';
+      document.getElementById('reflection3').value =
+        'Saya memahami bahwa laju kenaikan suhu air dingin menuju suhu ruang mengikuti kurva fungsi eksponensial, dan nilai faktor pengali b yang lebih mendekati 1 menandakan isolator botol bekerja lebih efektif.';
+
+      updateProgressAndLiveScore();
+      validationAlert.classList.add('hidden');
+      showToast('Contoh data murid berhasil diisikan.', 'info');
+    }
+
+    /**
+     * Mengatur ulang seluruh formulir dan menghapus hasil
+     */
+    function resetAllData() {
+      assessmentForm.reset();
+      Object.keys(selectedScores).forEach((key) => delete selectedScores[key]);
+      renderStatements();
+      updateProgressAndLiveScore();
+      validationAlert.classList.add('hidden');
+      resultSection.classList.add('hidden');
+      showToast('Formulir asesmen telah dikosongkan.', 'info');
+    }
+
+    // Inisialisasi aplikasi saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', () => {
+      renderStatements();
+      updateProgressAndLiveScore();
+
+      // Memastikan input nama otomatis menjadi huruf kapital sesuai instruksi dokumen
+      const nameInput = document.getElementById('studentName');
+      nameInput.addEventListener('input', () => {
+        const cursorPos = nameInput.selectionStart;
+        nameInput.value = nameInput.value.toUpperCase();
+        nameInput.setSelectionRange(cursorPos, cursorPos);
+        updateProgressAndLiveScore();
+      });
+
+      // Pantau perubahan input teks lainnya untuk bilah progres
+      ['studentGroup', 'studentClass', 'reflection1', 'reflection2', 'reflection3'].forEach((id) => {
+        document.getElementById(id).addEventListener('input', updateProgressAndLiveScore);
+      });
+
+      // Event listener tombol pedoman guru
+      const teacherGuidePanel = document.getElementById('teacherGuidePanel');
+      document.getElementById('toggleGuideBtn').addEventListener('click', () => {
+        teacherGuidePanel.classList.toggle('hidden');
+      });
+      document.getElementById('closeGuideBtn').addEventListener('click', () => {
+        teacherGuidePanel.classList.add('hidden');
+      });
+
+      // Event listener panel konfigurasi Google Apps Script
+      refreshScriptConnectionUI();
+      const scriptConfigPanel = document.getElementById('scriptConfigPanel');
+      document.getElementById('toggleScriptConfigBtn').addEventListener('click', () => {
+        scriptConfigPanel.classList.toggle('hidden');
+      });
+      document.getElementById('closeScriptConfigBtn').addEventListener('click', () => {
+        scriptConfigPanel.classList.add('hidden');
+      });
+      document.getElementById('saveScriptUrlBtn').addEventListener('click', () => {
+        const inputVal = document.getElementById('appsScriptUrlInput').value.trim();
+        if (!inputVal) {
+          showToast('Silakan masukkan URL Web App Google Apps Script terlebih dahulu.', 'warning');
+          return;
+        }
+        localStorage.setItem(STORAGE_KEY_SCRIPT_URL, inputVal);
+        refreshScriptConnectionUI();
+        showToast('URL Google Apps Script berhasil disimpan!', 'success');
+      });
+      document.getElementById('clearScriptUrlBtn').addEventListener('click', () => {
+        localStorage.removeItem(STORAGE_KEY_SCRIPT_URL);
+        refreshScriptConnectionUI();
+        showToast('Koneksi Google Apps Script telah diputuskan.', 'info');
+      });
+
+      // Event listener tombol bantu demo & reset
+      document.getElementById('fillDemoBtn').addEventListener('click', fillDemoData);
+      document.getElementById('resetFormBtn').addEventListener('click', resetAllData);
+
+      // Event listener kirim formulir
+      assessmentForm.addEventListener('submit', handleFormSubmit);
+
+      // Event listener tombol pada bagian hasil
+      document.getElementById('copyReportBtn').addEventListener('click', copyAssessmentReport);
+      document.getElementById('printReportBtn').addEventListener('click', () => window.print());
+      document.getElementById('editAnswersBtn').addEventListener('click', () => {
+        assessmentForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>
